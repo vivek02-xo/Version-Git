@@ -11,8 +11,14 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "aws-sdk": "^2.1693.0",
+    "aws-sdk": "^1.18.0",
+    "body-parser": "^2.3.0",
+    "cors": "^2.8.6",
     "dotenv": "^18.0.3",
+    "express": "^5.2.1",
+    "http": "^0.0.1-security",
+    "mongoose": "^9.10.2",
+    "socket.io": "^4.8.4",
     "uuid": "^14.0.2",
     "yargs": "^18.1.0"
   }

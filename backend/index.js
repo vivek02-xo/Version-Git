@@ -1,3 +1,12 @@
+const express = require("express"); // web framwork for node.js
+const dotenv = require("dotenv"); // this loads environment variables
+const cors = require("cors"); // connect one origin of web page to another
+const mongoose = require("mongoose"); // library for mondodb work
+const bodyParser = require("body-parser"); // read data from http request and put in req.body object
+const http = require("http"); // create http server or handle http request
+const { Server } = require("socket.io");
+
+dotenv.config();
 // yargs help us to read arguments from terminal.
 const yargs = require("yargs");
 const { hideBin } = require("yargs/helpers");
@@ -13,6 +22,7 @@ const { revertRepo } = require("./controllers/revert.js");
 // What happen when we take argument from terminal. (called a function).
 // yarg is reading arguments from terminal and calling a function of work on those arg.
 yargs(hideBin(process.argv))
+  .command("start", "Starts a new server", {}, startServer) // cause we need command
   .command("init", "Initialise a new repostiory", {}, initRepo)
   .command(
     "add <file>",
@@ -57,3 +67,54 @@ yargs(hideBin(process.argv))
   )
   .demandCommand(1, "You need atleast one command") // .demandCommand() ensures that the user must provide at least one command
   .help().argv;
+
+function startServer() {
+  const app = express();
+  const port = process.env.PORT || 3000;
+
+  app.use(bodyParser.json());
+  app.use(express.json());
+
+  const mongoURI = process.env.MONGODB_URI;
+
+  // mongo connection
+  mongoose
+    .connect(mongoURI)
+    .then(() => console.log("MongoDB cnnected!"))
+    .catch((err) => console.error("Unable to connect, ", err));
+
+  app.use(cors({ origin: "*" }));
+
+  app.get("/" , (req, res) =>{
+    res.send("Welcome!");
+  });
+
+  const httpServer = http.createServer(app);
+  const io = new Server(httpServer, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+    },
+  });
+
+  io.on("connection", (socket) => {
+    socket.on("joinRoom", (userID) => {
+      user = userID;
+      console.log("=====");
+      console.log(user);
+      console.log("=====");
+      socket.join(userID);
+    });
+  });
+
+  const db = mongoose.connection;
+
+  db.once("open", async () => {
+    console.log("CRUD operations called");
+  });
+
+  httpServer.listen(port, () => {
+    console.log(`Server is running on PORT ${port}`);
+  });
+
+}
