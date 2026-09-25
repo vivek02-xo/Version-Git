@@ -6,6 +6,8 @@ const bodyParser = require("body-parser"); // read data from http request and pu
 const http = require("http"); // create http server or handle http request
 const { Server } = require("socket.io");
 
+const mainRouter = require("./routes/main.router.js");
+
 dotenv.config();
 // yargs help us to read arguments from terminal.
 const yargs = require("yargs");
@@ -84,10 +86,7 @@ function startServer() {
     .catch((err) => console.error("Unable to connect, ", err));
 
   app.use(cors({ origin: "*" }));
-
-  app.get("/" , (req, res) =>{
-    res.send("Welcome!");
-  });
+  app.use("/", mainRouter);
 
   const httpServer = http.createServer(app);
   const io = new Server(httpServer, {
@@ -116,5 +115,4 @@ function startServer() {
   httpServer.listen(port, () => {
     console.log(`Server is running on PORT ${port}`);
   });
-
 }
