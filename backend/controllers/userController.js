@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { MongoClient } = require("mongodb");
 const dotenv = require("dotenv");
+var ObjectId = require("mongodb").ObjectId;
 
 dotenv.config();
 const uri = process.env.MONGODB_URI;
@@ -83,12 +84,41 @@ const login = async (req, res) => {
   }
 };
 
-const getAllUsers = (req, res) => {
-  res.send("All users fetched!");
+const getAllUsers = async (req, res) => {
+  try {
+    await connectClient();
+    const db = client.db("Version-Git");
+    const usersCollection = db.collection("users");
+
+    const users = await usersCollection.find({}).toArray(); // this gonna return in array cause it give error in json.
+    res.json(users);
+  } catch (err) {
+    console.error("Error during fetching : ", err.message);
+    res.status(500).send("Server error!");
+  }
 };
 
-const getUserProfile = (req, res) => {
-  res.send("Profile fetched!");
+const getUserProfile = async (req, res) => {
+  const currentID = req.params.id;
+
+  try {
+    await connectClient();
+    const db = client.db("Version-Git");
+    const usersCollection = db.collection("users");
+
+    const user = await usersCollection.findOne({
+      _id: new ObjectId(currentID),
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found!" });
+    }
+
+    res.send(user);
+  } catch (err) {
+    console.error("Error during fetching : ", err.message);
+    res.status(500).send("Server error!");
+  }
 };
 
 const updateUserProfile = (req, res) => {
